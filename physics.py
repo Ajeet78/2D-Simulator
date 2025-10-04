@@ -1,4 +1,5 @@
 import random
+import time
 from constants import G, SOFTENING, THETA, ELASTIC, MERGE, INELASTIC, WIDTH, HEIGHT
 from quadtree import Quadtree, Rectangle
 from particle import Particle
@@ -20,20 +21,27 @@ def build_quadtree(particles):
         qt.insert(p)
     return qt
 
-def calculate_forces(particles, use_barnes_hut=True):
+def calculate_forces(particles, use_barnes_hut=True, time_limit=None):
+    start = time.time()
     if use_barnes_hut:
         qt = build_quadtree(particles)
         for p in particles:
+            if time_limit and time.time() - start > time_limit:
+                break
             p.reset_force()
             fx, fy = qt.calculate_force(p, THETA, G, SOFTENING)
             p.apply_force(fx, fy)
     else:
         # O(n^2) brute force
         for i, p1 in enumerate(particles):
+            if time_limit and time.time() - start > time_limit:
+                break
             p1.reset_force()
             for j, p2 in enumerate(particles):
                 if i == j:
                     continue
+                if time_limit and time.time() - start > time_limit:
+                    break
                 dx = p2.x - p1.x
                 dy = p2.y - p1.y
                 dist_sq = dx*dx + dy*dy + SOFTENING
@@ -43,12 +51,17 @@ def calculate_forces(particles, use_barnes_hut=True):
                 fy = force * dy / dist
                 p1.apply_force(fx, fy)
 
-def handle_collisions(particles, collision_mode):
+def handle_collisions(particles, collision_mode, time_limit=None):
+    start = time.time()
     to_remove = set()
     for i in range(len(particles)):
+        if time_limit and time.time() - start > time_limit:
+            break
         if particles[i] in to_remove:
             continue
         for j in range(i+1, len(particles)):
+            if time_limit and time.time() - start > time_limit:
+                break
             if particles[j] in to_remove:
                 continue
             if particles[i].collides_with(particles[j]):
