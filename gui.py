@@ -74,6 +74,7 @@ class GUI:
         self.buttons.append(Button(10, 90, 80, 30, "Elastic"))
         self.buttons.append(Button(100, 90, 80, 30, "Merge"))
         self.buttons.append(Button(190, 90, 80, 30, "Inelastic"))
+        self.buttons.append(Button(370, 10, 100, 30, "Full Screen"))
 
         # Sliders
         self.sliders.append(Slider(10, 130, 200, 20, 0.1, 2.0, 1.0, "Zoom"))
