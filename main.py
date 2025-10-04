@@ -29,6 +29,8 @@ def main():
     pygame.display.set_caption("2D N-Body Particle Simulation")
     clock = pygame.time.Clock()
 
+    MAX_PHYSICS_TIME = 0.016  # Don't block longer than 16ms
+
     particles = []
     camera = Camera()
     camera.x = WIDTH / 2
@@ -111,14 +113,10 @@ def main():
         # Update camera zoom from slider
         camera.zoom = gui.get_zoom()
 
-        # Physics with time budget
-        start_time = time.time()
-        calculate_forces(particles, use_barnes_hut=True)
-        elapsed = time.time() - start_time
-        if elapsed < 0.5:  # Allow up to 0.5 seconds for physics
-            handle_collisions(particles, gui.collision_mode)
-            update_particles(particles, DT)
-        # Else skip collision and update if taking too long
+        # Physics with time budget to prevent freezing
+        calculate_forces(particles, use_barnes_hut=True, time_limit=MAX_PHYSICS_TIME)
+        update_particles(particles, DT)
+        handle_collisions(particles, gui.collision_mode, time_limit=MAX_PHYSICS_TIME)
 
         # Render
         screen.fill(BLACK)
@@ -127,7 +125,7 @@ def main():
         for p in particles:
             sx, sy = camera.world_to_screen(p.x, p.y)
             radius = p.radius * camera.zoom
-            if radius > 0.5:  # Only draw if visible
+            if radius > 0.5 and 0 <= sx < WIDTH and 0 <= sy < HEIGHT:  # Only draw if on screen
                 pygame.draw.circle(screen, p.color, (int(sx), int(sy)), int(radius))
 
         # Draw GUI
