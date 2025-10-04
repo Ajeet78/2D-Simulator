@@ -1,26 +1,33 @@
 
-import pygame
 import sys
 import time
-from constants import WIDTH, HEIGHT, FPS, DT, BLACK, WHITE, RED, GREEN, BLUE, ELASTIC, MERGE, INELASTIC
-from particle import Particle
-from physics import calculate_forces, handle_collisions, generate_particles, update_particles
+
+import pygame
+
+from constants import (BLACK, BLUE, DT, ELASTIC, FPS, GREEN, HEIGHT, INELASTIC,
+                       MERGE, RED, WHITE, WIDTH)
 from gui import GUI
+from particle import Particle
+from physics import (calculate_forces, generate_particles, handle_collisions,
+                     update_particles)
+
 
 class Camera:
-    def __init__(self, x=0, y=0, zoom=1.0):
+    def __init__(self, x=0, y=0, zoom=1.0, screen_width=WIDTH, screen_height=HEIGHT):
         self.x = x
         self.y = y
         self.zoom = zoom
+        self.screen_width = screen_width
+        self.screen_height = screen_height
 
     def world_to_screen(self, wx, wy):
-        sx = (wx - self.x) * self.zoom + WIDTH / 2
-        sy = (wy - self.y) * self.zoom + HEIGHT / 2
+        sx = (wx - self.x) * self.zoom + self.screen_width / 2
+        sy = (wy - self.y) * self.zoom + self.screen_height / 2
         return sx, sy
 
     def screen_to_world(self, sx, sy):
-        wx = (sx - WIDTH / 2) / self.zoom + self.x
-        wy = (sy - HEIGHT / 2) / self.zoom + self.y
+        wx = (sx - self.screen_width / 2) / self.zoom + self.x
+        wy = (sy - self.screen_height / 2) / self.zoom + self.y
         return wx, wy
 
 def main():
@@ -31,8 +38,11 @@ def main():
 
     MAX_PHYSICS_TIME = 0.016  # Don't block longer than 16ms
 
+    screen_width, screen_height = WIDTH, HEIGHT
+    full_screen = False
+
     particles = []
-    camera = Camera()
+    camera = Camera(screen_width=screen_width, screen_height=screen_height)
     camera.x = WIDTH / 2
     camera.y = HEIGHT / 2
     gui = GUI()
@@ -52,6 +62,9 @@ def main():
                 running = False
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                screen_width, screen_height = event.w, event.h
+                camera.screen_width = screen_width
+                camera.screen_height = screen_height
                 # Adjust GUI if needed, but for simplicity, keep fixed
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left click
@@ -77,6 +90,15 @@ def main():
                         gui.collision_mode = MERGE
                     elif button_idx == 9:  # Inelastic
                         gui.collision_mode = INELASTIC
+                    elif button_idx == 10:  # Full Screen
+                        full_screen = not full_screen
+                        if full_screen:
+                            screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+                        screen_width, screen_height = screen.get_size()
+                        camera.screen_width = screen_width
+                        camera.screen_height = screen_height
                     else:
                         if spawning:
                             wx, wy = camera.screen_to_world(*pos)
@@ -125,7 +147,7 @@ def main():
         for p in particles:
             sx, sy = camera.world_to_screen(p.x, p.y)
             radius = p.radius * camera.zoom
-            if radius > 0.5 and 0 <= sx < WIDTH and 0 <= sy < HEIGHT:  # Only draw if on screen
+            if radius > 0.5 and 0 <= sx < screen_width and 0 <= sy < screen_height:  # Only draw if on screen
                 pygame.draw.circle(screen, p.color, (int(sx), int(sy)), int(radius))
 
         # Draw GUI
