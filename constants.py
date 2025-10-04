@@ -14,7 +14,7 @@ DEFAULT_RADIUS = 5.0
 
 # Simulation settings
 DT = 0.016  # Time step (approx 60 FPS)
-SOFTENING = 0.1  # Softening parameter for gravity
+SOFTENING = 1.0  # Softening parameter for gravity
 
 # Screen settings
 WIDTH = 800
@@ -27,8 +27,8 @@ PAN_SPEED = 1.0
 MIN_ZOOM = 0.1
 MAX_ZOOM = 10.0
 
-# Barnes-Hut theta
-THETA = 0.5
+# Barnes-Hut theta (increased for faster approximations)
+THETA = 2.0
 
 # Colors
 BLACK = (0, 0, 0)

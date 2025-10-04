@@ -1,5 +1,7 @@
+
 import pygame
 import sys
+import time
 from constants import WIDTH, HEIGHT, FPS, DT, BLACK, WHITE, RED, GREEN, BLUE, ELASTIC, MERGE, INELASTIC
 from particle import Particle
 from physics import calculate_forces, handle_collisions, generate_particles, update_particles
@@ -29,6 +31,8 @@ def main():
 
     particles = []
     camera = Camera()
+    camera.x = WIDTH / 2
+    camera.y = HEIGHT / 2
     gui = GUI()
 
     # Modes
@@ -107,10 +111,14 @@ def main():
         # Update camera zoom from slider
         camera.zoom = gui.get_zoom()
 
-        # Physics
+        # Physics with time budget
+        start_time = time.time()
         calculate_forces(particles, use_barnes_hut=True)
-        handle_collisions(particles, gui.collision_mode)
-        update_particles(particles, DT)
+        elapsed = time.time() - start_time
+        if elapsed < 0.5:  # Allow up to 0.5 seconds for physics
+            handle_collisions(particles, gui.collision_mode)
+            update_particles(particles, DT)
+        # Else skip collision and update if taking too long
 
         # Render
         screen.fill(BLACK)

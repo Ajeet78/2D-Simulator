@@ -67,8 +67,8 @@ def generate_particles(count, center_x=WIDTH/2, center_y=HEIGHT/2, spread=100):
     for _ in range(count):
         x = center_x + random.uniform(-spread, spread)
         y = center_y + random.uniform(-spread, spread)
-        vx = random.uniform(-10, 10)
-        vy = random.uniform(-10, 10)
+        vx = random.uniform(-50, 50)
+        vy = random.uniform(-50, 50)
         mass = random.uniform(0.5, 2.0)
         radius = mass * 5  # Scale radius with mass
         particles.append(Particle(x, y, vx, vy, mass, radius))
